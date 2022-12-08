@@ -8,9 +8,9 @@ import (
 type Comment struct {
 	GormModel
 	Message  	string `gorm:"not null" json:"message" form:"message" valid:"required~Message of your comment is required"`
-	PhotoID   	uint
+	PhotoID   	uint `gorm:"not null" json:"photo_id" form:"photo_id" valid:"required~Photo ID of your comment is required"`
 	Photo     	*Photo
-	UserID   	uint
+	UserID   	uint `json:"user_id"`
 	User     	*User
 }
 

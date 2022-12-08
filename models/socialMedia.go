@@ -5,15 +5,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type SocialMedia struct {
+type Socialmedia struct {
 	GormModel
 	Name			string	`gorm:"not null;uniqueIndex" json:"name" form:"name" valid:"required~Social media name is required"`
-	SocialMediaUrl 	string `gorm:"not null" json:"social_media_url" form:"social_media__url" valid:"required~Url of your social media_ is required"`
-	UserID   		uint
+	SocialMediaUrl 	string `gorm:"not null" json:"social_media_url" form:"social_media_url" valid:"required~Url of your social media_ is required"`
+	UserID   		uint `json:"user_id"`
 	User     		*User
 }
 
-func (sm *SocialMedia) BeforeCreate(tx *gorm.DB) (err error) {
+func (sm *Socialmedia) BeforeCreate(tx *gorm.DB) (err error) {
 	_, errCreate := govalidator.ValidateStruct(sm)
 
 	if errCreate != nil {
@@ -26,7 +26,7 @@ func (sm *SocialMedia) BeforeCreate(tx *gorm.DB) (err error) {
 
 }
 
-func (sm *SocialMedia) BeforeUpdate(tx *gorm.DB) (err error) {
+func (sm *Socialmedia) BeforeUpdate(tx *gorm.DB) (err error) {
 	_, errCreate := govalidator.ValidateStruct(sm)
 
 	if errCreate != nil {

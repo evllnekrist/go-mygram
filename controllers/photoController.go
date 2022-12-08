@@ -3,9 +3,10 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 	// "fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm/clause"
 	"go-rest-api/database"
 	"go-rest-api/models"
 )
@@ -43,11 +44,14 @@ func PhotoGetList(c *gin.Context) {
 
 func PhotoCreate(c *gin.Context) {
 	db := database.GetDB()
+	userData := c.MustGet("userData").(jwt.MapClaims)
+	userID := uint(userData["id"].(float64))
 
 	var input models.Photo
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
 	}	
+	input.UserID = userID
 	
 	// Input Create Photo
 	err := db.Debug().Create(&input).Error
@@ -67,6 +71,8 @@ func PhotoCreate(c *gin.Context) {
 
 func PhotoUpdate(c *gin.Context) {
 	db := database.GetDB()
+	// userData := c.MustGet("userData").(jwt.MapClaims)
+	// userID := uint(userData["id"].(float64))
 
 	var photos models.Photo
 	err := db.First(&photos, "id = ?", c.Param("id")).Error
@@ -83,14 +89,22 @@ func PhotoUpdate(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
 	}	
 
-	// Input Update Photo
-	db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}}, // key colume
-		DoUpdates: clause.AssignmentColumns([]string{"customer_name"}), // column needed to be updated
-	}).Create(&input)
+	Result := map[string]interface{}{}
+	SqlStatement := "Update photos SET title = ?, caption = ?, photo_url = ?, updated_at = ?  WHERE id = ? RETURNING id, title, caption, photo_url, created_at, user_id"
+	err2 := db.Raw(
+		SqlStatement,
+		input.Title, input.Caption, input.PhotoUrl, time.Now(), c.Param("id"),
+	).Scan(&Result).Error
+	if err2 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to update",
+			"message": err.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": input,
+		"data": Result,
 		"code" : http.StatusOK,
 	})
 }

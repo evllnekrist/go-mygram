@@ -95,31 +95,31 @@ ALTER SEQUENCE public.comments_id_seq
     OWNER TO postgres;
 -- -------------------------------------TABLE::COMMENTS------------------------------------end
 -- -------------------------------------TABLE::SOCIAL-MEDIAS-----------------------------start
-CREATE TABLE IF NOT EXISTS public.socialmedias
+CREATE TABLE IF NOT EXISTS public.socialmedia
 (
-    id bigint NOT NULL DEFAULT nextval('socialmedias_id_seq'::regclass),
+    id bigint NOT NULL DEFAULT nextval('socialmedia_id_seq'::regclass),
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone,
     name character varying COLLATE pg_catalog."default" NOT NULL,
     social_media_url text COLLATE pg_catalog."default",
     user_id bigint REFERENCES users (id),
-    CONSTRAINT socialmedias_pkey PRIMARY KEY (id)
+    CONSTRAINT socialmedia_pkey PRIMARY KEY (id)
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.socialmedias
+ALTER TABLE IF EXISTS public.socialmedia
     OWNER to postgres;
 
-CREATE SEQUENCE IF NOT EXISTS public.socialmedias_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.socialmedia_id_seq
     INCREMENT 1
     START 1
     MINVALUE 1
     MAXVALUE 9223372036854775807
     CACHE 1
-    OWNED BY socialmedias.id;
+    OWNED BY socialmedia.id;
 
-ALTER SEQUENCE public.socialmedias_id_seq
+ALTER SEQUENCE public.socialmedia_id_seq
     OWNER TO postgres;
 -- -------------------------------------TABLE::SOCIAL-MEDIAS-------------------------------end
 -- -------------------------------------DB-------------------------------------------------end

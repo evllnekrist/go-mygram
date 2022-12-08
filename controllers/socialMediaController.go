@@ -3,18 +3,19 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 	// "fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm/clause"
 	"go-rest-api/database"
 	"go-rest-api/models"
 )
 
-func SocialMediaGet(c *gin.Context) {
+func SocialmediaGet(c *gin.Context) {
 	db 			:= database.GetDB()
-	socialMediaId, _ 	:= strconv.Atoi(c.Param("id"))
-	SocialMedias 		:= models.SocialMedia{}
-	err 		:= db.Find(&SocialMedias, uint(socialMediaId)).Error
+	socialmediaId, _ 	:= strconv.Atoi(c.Param("id"))
+	Socialmedias 		:= models.Socialmedia{}
+	err 		:= db.Find(&Socialmedias, uint(socialmediaId)).Error
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -23,13 +24,13 @@ func SocialMediaGet(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, SocialMedias)
+	c.JSON(http.StatusOK, Socialmedias)
 }
 
-func SocialMediaGetList(c *gin.Context) {
+func SocialmediaGetList(c *gin.Context) {
 	db := database.GetDB()
-	SocialMedias := []models.SocialMedia{}
-	err := db.Find(&SocialMedias).Error
+	Socialmedias := []models.Socialmedia{}
+	err := db.Find(&Socialmedias).Error
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -38,18 +39,21 @@ func SocialMediaGetList(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, SocialMedias)
+	c.JSON(http.StatusOK, Socialmedias)
 }
 
-func SocialMediaCreate(c *gin.Context) {
+func SocialmediaCreate(c *gin.Context) {
 	db := database.GetDB()
+	userData := c.MustGet("userData").(jwt.MapClaims)
+	userID := uint(userData["id"].(float64))
 
-	var input models.SocialMedia
+	var input models.Socialmedia
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
 	}	
+	input.UserID = userID
 	
-	// Input Create SocialMedia
+	// Input Create Socialmedia
 	err := db.Debug().Create(&input).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -65,11 +69,13 @@ func SocialMediaCreate(c *gin.Context) {
 	})
 }
 
-func SocialMediaUpdate(c *gin.Context) {
+func SocialmediaUpdate(c *gin.Context) {
 	db := database.GetDB()
+	// userData := c.MustGet("userData").(jwt.MapClaims)
+	// userID := uint(userData["id"].(float64))
 
-	var socialMedias models.SocialMedia
-	err := db.First(&socialMedias, "id = ?", c.Param("id")).Error
+	var socialmedias models.Socialmedia
+	err := db.First(&socialmedias, "id = ?", c.Param("id")).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "request not found",
@@ -78,30 +84,38 @@ func SocialMediaUpdate(c *gin.Context) {
 		return
 	}
 
-	var input models.SocialMedia
+	var input models.Socialmedia
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
 	}	
-
-	// Input Update SocialMedia
-	db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}}, // key colume
-		DoUpdates: clause.AssignmentColumns([]string{"customer_name"}), // column needed to be updated
-	}).Create(&input)
+	
+	Result := map[string]interface{}{}
+	SqlStatement := "Update socialmedia SET name = ?, social_media_url = ?, updated_at = ?  WHERE id = ? RETURNING id, name, social_media_url, created_at, user_id"
+	err2 := db.Raw(
+		SqlStatement,
+		input.Name, input.SocialMediaUrl, time.Now(), c.Param("id"),
+	).Scan(&Result).Error
+	if err2 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to update",
+			"message": err.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": input,
+		"data": Result,
 		"code" : http.StatusOK,
 	})
 }
 
-func SocialMediaDelete(c *gin.Context) {
+func SocialmediaDelete(c *gin.Context) {
 	db := database.GetDB()
 
-	socialMediaId, _ := strconv.Atoi(c.Param("id"))
-	SocialMedias := models.SocialMedia{}
+	socialmediaId, _ := strconv.Atoi(c.Param("id"))
+	Socialmedias := models.Socialmedia{}
 
-	err := db.Delete(SocialMedias, uint(socialMediaId)).Error
+	err := db.Delete(Socialmedias, uint(socialmediaId)).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err":     "Bad Request on header",
@@ -111,6 +125,6 @@ func SocialMediaDelete(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "SocialMedia has been successfully deleted",
+		"message": "Social media has been successfully deleted",
 	})
 }

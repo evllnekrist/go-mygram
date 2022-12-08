@@ -3,9 +3,10 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 	// "fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm/clause"
 	"go-rest-api/database"
 	"go-rest-api/models"
 	"go-rest-api/helpers"
@@ -103,6 +104,8 @@ func UserCreate(c *gin.Context) {
 
 func UserUpdate(c *gin.Context) {
 	db := database.GetDB()
+	userData := c.MustGet("userData").(jwt.MapClaims)
+	userID := uint(userData["id"].(float64))
 
 	var users models.User
 	err := db.First(&users, "id = ?", c.Param("id")).Error
@@ -119,11 +122,19 @@ func UserUpdate(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
 	}	
 
-	// Input Update User
-	db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}}, // key colume
-		DoUpdates: clause.AssignmentColumns([]string{"customer_name"}), // column needed to be updated
-	}).Create(&input)
+	Result := map[string]interface{}{}
+	SqlStatement := "Update users SET email = ?, username = ?, updated_at = ? WHERE id = ? RETURNING id, email, username, updated_at"
+	err2 := db.Raw(
+		SqlStatement,
+		input.Email, input.Username, time.Now(), uint(userID),
+	).Scan(&Result).Error
+	if err2 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to update",
+			"message": err.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": input,

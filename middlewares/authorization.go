@@ -148,7 +148,7 @@ func CommentAuthorization() gin.HandlerFunc {
 	}
 }
 
-func SocialMediaAuthorization() gin.HandlerFunc {
+func SocialmediaAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authName := "Social media"
 		db := database.GetDB()
@@ -167,8 +167,8 @@ func SocialMediaAuthorization() gin.HandlerFunc {
 				return
 			}
 
-			SocialMedias := models.SocialMedia{}
-			err = db.Select("user_id").First(&SocialMedias, uint(id)).Error
+			Socialmedias := models.Socialmedia{}
+			err = db.Select("user_id").First(&Socialmedias, uint(id)).Error
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 					"error":   "Data Not Found",
@@ -177,7 +177,7 @@ func SocialMediaAuthorization() gin.HandlerFunc {
 				return
 			}
 
-			if userID == SocialMedias.UserID {
+			if userID == Socialmedias.UserID {
 				return
 			}else {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{

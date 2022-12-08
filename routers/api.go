@@ -35,19 +35,19 @@ func StartServer() *gin.Engine{
 		commentRouter.GET("/", controllers.CommentGetList)
 		commentRouter.GET("/:id", controllers.CommentGet)
 		commentRouter.Use(middlewares.Authentication())
-		commentRouter.POST("/", middlewares.CommentAuthorization(), controllers.CommentCreate)
+		commentRouter.POST("/", controllers.CommentCreate)
 		commentRouter.PUT("/:id", middlewares.CommentAuthorization(), controllers.CommentUpdate)
 		commentRouter.DELETE("/:id", middlewares.CommentAuthorization(), controllers.CommentDelete)
 	}
 
-	socialMediaRouter := r.Group("/social-medias")
+	socialmediaRouter := r.Group("/social-medias")
 	{
-		socialMediaRouter.GET("/", controllers.SocialMediaGetList)
-		socialMediaRouter.GET("/:id", controllers.SocialMediaGet)
-		socialMediaRouter.Use(middlewares.Authentication())
-		socialMediaRouter.POST("/", middlewares.SocialMediaAuthorization(), controllers.SocialMediaCreate)
-		socialMediaRouter.PUT("/:id", middlewares.SocialMediaAuthorization(), controllers.SocialMediaUpdate)
-		socialMediaRouter.DELETE("/:id", middlewares.SocialMediaAuthorization(), controllers.SocialMediaDelete)
+		socialmediaRouter.GET("/", controllers.SocialmediaGetList)
+		socialmediaRouter.GET("/:id", controllers.SocialmediaGet)
+		socialmediaRouter.Use(middlewares.Authentication())
+		socialmediaRouter.POST("/", middlewares.SocialmediaAuthorization(), controllers.SocialmediaCreate)
+		socialmediaRouter.PUT("/:id", middlewares.SocialmediaAuthorization(), controllers.SocialmediaUpdate)
+		socialmediaRouter.DELETE("/:id", middlewares.SocialmediaAuthorization(), controllers.SocialmediaDelete)
 	}
 
 	return r

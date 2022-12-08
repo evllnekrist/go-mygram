@@ -3,9 +3,10 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 	// "fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm/clause"
 	"go-rest-api/database"
 	"go-rest-api/models"
 )
@@ -43,11 +44,14 @@ func CommentGetList(c *gin.Context) {
 
 func CommentCreate(c *gin.Context) {
 	db := database.GetDB()
+	userData := c.MustGet("userData").(jwt.MapClaims)
+	userID := uint(userData["id"].(float64))
 
 	var input models.Comment
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
 	}	
+	input.UserID = userID
 	
 	// Input Create Comment
 	err := db.Debug().Create(&input).Error
@@ -67,6 +71,8 @@ func CommentCreate(c *gin.Context) {
 
 func CommentUpdate(c *gin.Context) {
 	db := database.GetDB()
+	// userData := c.MustGet("userData").(jwt.MapClaims)
+	// userID := uint(userData["id"].(float64))
 
 	var comments models.Comment
 	err := db.First(&comments, "id = ?", c.Param("id")).Error
@@ -83,14 +89,22 @@ func CommentUpdate(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
 	}	
 
-	// Input Update Comment
-	db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}}, // key colume
-		DoUpdates: clause.AssignmentColumns([]string{"customer_name"}), // column needed to be updated
-	}).Create(&input)
+	Result := map[string]interface{}{}
+	SqlStatement := "Update comments SET message = ?, updated_at = ?  WHERE id = ? RETURNING id, message, photo_id, created_at, user_id"
+	err2 := db.Raw(
+		SqlStatement,
+		input.Message, time.Now(), c.Param("id"),
+	).Scan(&Result).Error
+	if err2 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to update",
+			"message": err.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": input,
+		"data": Result,
 		"code" : http.StatusOK,
 	})
 }
