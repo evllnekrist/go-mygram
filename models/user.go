@@ -11,7 +11,7 @@ type User struct {
 	Username	string    		`gorm:"not null;uniqueIndex" json:"username" form:"username" valid:"required~Your username is required"`
 	Email     	string    		`gorm:"not null;uniqueIndex" json:"email" form:"email" valid:"required~Your email is required,email~Invalid email format"`
 	Password  	string    		`gorm:"not null" json:"password" form:"password" valid:"required~Your password is required,minstringlength(6)~Password has to have a minimum length of 6 characters"`
-	Age       	uint      		`gorm:"not null;" json:"age" form:"age" valid:"required~Your age is required,range(9,100)~Age has to be more than 8""`
+	Age       	uint      		`gorm:"not null;" json:"age" form:"age" valid:"required~Your age is required,range(9|100)~Age has to be older than 8 but not exceed 100"`
 	Photos  	[]Photo   		`gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"photos"`
 	Comments  	[]Comment   	`gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"comments"`
 }

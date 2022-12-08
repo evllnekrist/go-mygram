@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm/clause"
 	"go-rest-api/database"
 	"go-rest-api/models"
+	"go-rest-api/helpers"
 )
 
 func UserGet(c *gin.Context) {
@@ -39,6 +40,41 @@ func UserGetList(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, Users)
+}
+
+func UserLogin(c *gin.Context) {
+	db := database.GetDB()
+
+	var input models.User
+	password := ""
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
+	}	
+	password = input.Password
+
+	err := db.Debug().Where("email = ?", input.Email).Take(&input).Error
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "Unauthorized",
+			"message": "invalid email/password",
+		})
+		return
+	}
+
+	comparePass := helpers.ComparePass([]byte(input.Password), []byte(password))
+	if !comparePass {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "Unauthorized",
+			"message": "invalid email/password",
+		})
+		return
+	}
+
+	token := helpers.GenerateToken(input.ID, input.Email)
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+		"code" : http.StatusOK,
+	})
 }
 
 func UserCreate(c *gin.Context) {

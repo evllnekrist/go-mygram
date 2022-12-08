@@ -12,6 +12,7 @@ import (
 
 func UserAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		authName := "User"
 		db := database.GetDB()
 		
 		userData := c.MustGet("userData").(jwt.MapClaims)
@@ -43,7 +44,7 @@ func UserAuthorization() gin.HandlerFunc {
 			}else {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error":   "Unauthorized",
-					"message": "you are not allowed to access this data",
+					"message": "you are not allowed to access this data. "+authName+" belongs to somebody else",
 				})
 				return
 			}
@@ -57,6 +58,7 @@ func UserAuthorization() gin.HandlerFunc {
 
 func PhotoAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		authName := "Photo"
 		db := database.GetDB()
 		
 		userData := c.MustGet("userData").(jwt.MapClaims)
@@ -88,7 +90,7 @@ func PhotoAuthorization() gin.HandlerFunc {
 			}else {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error":   "Unauthorized",
-					"message": "you are not allowed to access this data",
+					"message": "you are not allowed to access this data. "+authName+" belongs to somebody else",
 				})
 				return
 			}
@@ -102,6 +104,7 @@ func PhotoAuthorization() gin.HandlerFunc {
 
 func CommentAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		authName := "Comment"
 		db := database.GetDB()
 		
 		userData := c.MustGet("userData").(jwt.MapClaims)
@@ -133,7 +136,7 @@ func CommentAuthorization() gin.HandlerFunc {
 			}else {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error":   "Unauthorized",
-					"message": "you are not allowed to access this data",
+					"message": "you are not allowed to access this data. "+authName+" belongs to somebody else",
 				})
 				return
 			}
@@ -147,6 +150,7 @@ func CommentAuthorization() gin.HandlerFunc {
 
 func SocialMediaAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		authName := "Social media"
 		db := database.GetDB()
 		
 		userData := c.MustGet("userData").(jwt.MapClaims)
@@ -178,7 +182,7 @@ func SocialMediaAuthorization() gin.HandlerFunc {
 			}else {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error":   "Unauthorized",
-					"message": "you are not allowed to access this data",
+					"message": "you are not allowed to access this data. "+authName+" belongs to somebody else",
 				})
 				return
 			}
